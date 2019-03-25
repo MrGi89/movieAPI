@@ -1,0 +1,2 @@
+MYSQL_DB = 'DRT_db'
+MYSQL_PSWD = 'Malami321'
