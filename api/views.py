@@ -1,20 +1,16 @@
-from django.db.models import Count
-from django.shortcuts import render
-from django.http import Http404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from api.models import Comment, Movie
 from api.serializers import CommentSerializer, MovieSerializer, TopSerializer
+from django.db import connection
 
 
 class ListMovies(APIView):
 
     def get(self, request):
         """
-
-        :param request:
-        :return:
+        This view should return list of all movies and their details stored in local database.
         """
         movies = Movie.objects.all()
         serializer = MovieSerializer(movies, many=True)
@@ -22,9 +18,7 @@ class ListMovies(APIView):
 
     def post(self, request):
         """
-
-        :param request:
-        :return:
+        This view should serialize passed data, save object instance to database and return saved data.
         """
         serializer = MovieSerializer(data=request.data, partial=True)
         if serializer.is_valid():
@@ -37,9 +31,8 @@ class ListComments(APIView):
 
     def get(self, request):
         """
-
-        :param request:
-        :return:
+        This view should return list of movie comments(if movie ID was passed in url parameters)
+        or all comments stored in database.
         """
         movie_id = request.GET.get('movie_id')
         if movie_id:
@@ -51,9 +44,7 @@ class ListComments(APIView):
 
     def post(self, request):
         """
-
-        :param request:
-        :return:
+        This view should serialized passed data, save comment in database and return object instance.
         """
         serializer = CommentSerializer(data=request.data)
         if serializer.is_valid():
@@ -66,48 +57,33 @@ class ListTop(APIView):
 
     def get(self, request):
         """
-        
-        :param request:
-        :return:
+        This view should check if date range parameter was passed in url, filter
         """
-        date_from = request.GET.get('date_from')
-        date_to = request.GET.get('date_to')
-        if date_from is None or date_to is None:
-            return Response('No date specified', status=status.HTTP_400_BAD_REQUEST)
+        serializer = TopSerializer(data=self.request.query_params)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        movies = self.get_movies(**serializer.validated_data)
+        return Response(movies, status=status.HTTP_200_OK)
 
-        movies = Movie.objects.all().values('id').annotate(total_comments=Count('comments')).order_by('-total_comments')
-        rank = 1
-        for count, movie in enumerate(movies):
-            if count == 0 or movie['total_comments'] == movies[count - 1]['total_comments']:
-                movie['rank'] = rank
-            else:
-                rank += 1
-                movie['rank'] = rank
+    @staticmethod
+    def get_movies(date_from, date_to):
+        """
+        Returns all movies with count of comments in specified date range with rank attribute in form of dict
+        """
+        cursor = connection.cursor()
+        cursor.execute('''SELECT am.id AS movie_id, 
+                                 COUNT(ac.id) AS total_comments, 
+                                 RANK () OVER (ORDER BY COUNT(ac.id) DESC)
+                          FROM api_movie am
+                          LEFT JOIN api_comment ac ON am.id=ac.movie_id AND ac.create_date BETWEEN %s AND %s
+                          GROUP BY am.id ORDER BY COUNT(ac.id) DESC;''', (date_from, date_to))
+        row = ListTop.dictfetchall(cursor)
+        return row
 
-        serializer = TopSerializer(movies, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    @staticmethod
+    def dictfetchall(cursor):
+        """
+        Return all rows from a cursor as a dict
+        """
+        columns = [col[0] for col in cursor.description]
+        return [dict(zip(columns, row)) for row in cursor.fetchall()]

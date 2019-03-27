@@ -2,6 +2,7 @@ import requests
 from rest_framework import serializers
 from .models import Comment, Movie, Rating
 from movies.local_settings import OMDB_API_KEY
+from django.db.transaction import atomic
 
 
 class CommentSerializer(serializers.ModelSerializer):
@@ -25,7 +26,12 @@ class MovieSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
     def validate(self, data):
-        """"""
+        """
+        Takes movie title from body post request and collects rest of movie details from omdb API.
+        Raises validation error if movie title doesn't exists in outer API database.
+        :param data: (dict) data collected from post body request
+        :return: serialized data
+        """
         title = data.get('title')
         if title is None:
             raise serializers.ValidationError('Movie title was not provided')
@@ -40,6 +46,11 @@ class MovieSerializer(serializers.ModelSerializer):
         return omdb_response
 
     def create(self, validated_data):
+        """
+        Saves movie object to database.
+        :param validated_data: (dict) contains validated movie details
+        :return: movie object
+        """
         movie = Movie.objects.create(title=validated_data['Title'],
                                      year=validated_data['Year'],
                                      rated=validated_data['Rated'],
@@ -64,16 +75,26 @@ class MovieSerializer(serializers.ModelSerializer):
                                      production=validated_data['Production'],
                                      website=validated_data['Website'],
                                      response=validated_data['Response'])
+        self.save_ratings(validated_data['Ratings'], movie)
+        return movie
 
-        for rating in validated_data['Ratings']:
+    @atomic
+    def save_ratings(self, ratings, movie):
+        """
+        Saves movie ratings to database in one transaction.
+        :param ratings: (array) list of all movie ratings
+        :param movie: (obj) movie object that ratings are assign to
+        :return: None
+        """
+        for rating in ratings:
             Rating.objects.create(source=rating['Source'],
                                   value=rating['Value'],
                                   movie=movie)
-        return movie
 
 
 class TopSerializer(serializers.Serializer):
 
-    movie_id = serializers.IntegerField(required=True, source='id')
-    total_comments = serializers.IntegerField(required=True)
-    rank = serializers.IntegerField(required=True)
+    date_from = serializers.DateField(required=True)
+    date_to = serializers.DateField(required=True)
+
+
