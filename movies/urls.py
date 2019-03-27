@@ -15,7 +15,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from api.views import ListComments, ListMovies, ListTop
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('movies/', ListMovies.as_view(), name='movies'),
+    path('comments/', ListComments.as_view()),
+    path('top/', ListTop.as_view()),
 ]
+

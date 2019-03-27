@@ -194,7 +194,8 @@ venv.bak/
 
 ### MY_DATA ###
 
-./local_settings.py
+./movies/local_settings.py
 .idea*
+api/migrations/*
 
 
