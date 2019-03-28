@@ -27,7 +27,7 @@ SECRET_KEY = '!2gto-cqy0+fqhgkv-n%v__p683&*d8%bv4eyyll(ci65wn+z*'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['protected-basin-94413.herokuapp.com']
 
 DEBUG = config('DEBUG', default=False, cast=bool)
 
@@ -79,14 +79,7 @@ WSGI_APPLICATION = 'movies.wsgi.application'
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': config('SQL_NAME', cast=str),
-        'USER': config('SQL_USER', cast=str),
-        'PASSWORD': config('SQL_PSWD', cast=str),
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
-    }
+ 'default': dj_database_url.config(default=config('DATABASE_URL'))
 }
 
 # Password validation
