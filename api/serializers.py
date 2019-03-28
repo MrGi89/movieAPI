@@ -2,7 +2,6 @@ import os
 import requests
 from rest_framework import serializers
 from .models import Comment, Movie, Rating
-from movies.local_settings import OMDB_API_KEY
 from django.db.transaction import atomic
 
 
@@ -39,7 +38,7 @@ class MovieSerializer(serializers.ModelSerializer):
         omdb_request = requests.get(url='http://www.omdbapi.com/',
                                     params={'t': title,
                                             'type': 'movie',
-                                            'apikey': OMDB_API_KEY})
+                                            'apikey': os.environ.get('OMDB_API_KEY')})
 
         omdb_response = omdb_request.json()
         if omdb_response.get('Response') == 'False':
