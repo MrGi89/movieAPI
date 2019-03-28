@@ -11,7 +11,9 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 """
 
 import os
-# from movies.local_settings import *
+import django_heroku
+import dj_database_url
+from decouple import config
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -24,10 +26,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '!2gto-cqy0+fqhgkv-n%v__p683&*d8%bv4eyyll(ci65wn+z*'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['protected-basin-94413.herokuapp.com']
 
+DEBUG = config('DEBUG', default=False, cast=bool)
 
 # Application definition
 
@@ -76,27 +78,9 @@ WSGI_APPLICATION = 'movies.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/2.1/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': SQL_DB,
-#         'USER': 'root',
-#         'PASSWORD': SQL_PSWD,
-#         'HOST': '127.0.0.1',
-#         'PORT': '3306',
-#     }
-# }
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-#         'NAME': SQL_DB,
-#         'USER': 'postgres',
-#         'PASSWORD': SQL_PSWD,
-#         'HOST': 'localhost',
-#         'PORT': '',
-#     }
-# }
+DATABASES = {
+ 'default': dj_database_url.config(default=config('DATABASE_URL'))
+}
 
 
 # Password validation
@@ -135,4 +119,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.1/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_URL = "/static/"
+
+django_heroku.settings(locals())

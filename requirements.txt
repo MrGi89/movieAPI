@@ -4,3 +4,6 @@ gunicorn
 django-heroku
 requests
 psycopg2-binary
+whitenoise
+dj-database-url
+python-decouple
