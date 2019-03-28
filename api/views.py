@@ -1,9 +1,9 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
+from django.db import connection
 from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from api.models import Comment, Movie
 from api.serializers import CommentSerializer, MovieSerializer, TopSerializer
-from django.db import connection
 
 
 class ListMovies(APIView):

@@ -20,7 +20,7 @@ from api.views import ListComments, ListMovies, ListTop
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('movies/', ListMovies.as_view(), name='movies'),
-    path('comments/', ListComments.as_view()),
-    path('top/', ListTop.as_view()),
+    path('comments/', ListComments.as_view(), name='comments'),
+    path('top/', ListTop.as_view(), name='top'),
 ]
 
