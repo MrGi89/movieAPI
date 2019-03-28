@@ -1,5 +1,5 @@
-import os
 import requests
+from decouple import config
 from rest_framework import serializers
 from .models import Comment, Movie, Rating
 from django.db.transaction import atomic
@@ -38,7 +38,7 @@ class MovieSerializer(serializers.ModelSerializer):
         omdb_request = requests.get(url='http://www.omdbapi.com/',
                                     params={'t': title,
                                             'type': 'movie',
-                                            'apikey': os.environ.get('OMDB_API_KEY')})
+                                            'apikey': config('OMDB_API_KEY', default=False, cast=str)})
 
         omdb_response = omdb_request.json()
         if omdb_response.get('Response') == 'False':
@@ -93,8 +93,5 @@ class MovieSerializer(serializers.ModelSerializer):
 
 
 class TopSerializer(serializers.Serializer):
-
     date_from = serializers.DateField(required=True)
     date_to = serializers.DateField(required=True)
-
-

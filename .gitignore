@@ -196,5 +196,5 @@ venv.bak/
 
 ./movies/local_settings.py
 .idea*
-
+.env
 

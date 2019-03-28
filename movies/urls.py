@@ -23,4 +23,3 @@ urlpatterns = [
     path('comments/', ListComments.as_view(), name='comments'),
     path('top/', ListTop.as_view(), name='top'),
 ]
-
