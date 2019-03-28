@@ -1,3 +1,4 @@
+import os
 import requests
 from rest_framework import serializers
 from .models import Comment, Movie, Rating
